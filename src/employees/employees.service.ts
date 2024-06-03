@@ -54,7 +54,19 @@ export class EmployeesService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    return `This action updates a #${id} employee`;
+    const employee = await this.employeeRepository.preload({
+      id,
+      ...updateEmployeeDto,
+    });
+
+    if (!employee) throw new NotFoundException('Employee not found');
+
+    try {
+      await this.employeeRepository.save(employee);
+      return employee;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   async remove(id: string) {
