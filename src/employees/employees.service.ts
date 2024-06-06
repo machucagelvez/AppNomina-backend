@@ -32,7 +32,7 @@ export class EmployeesService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, page = 0 } = paginationDto;
+    const { limit = 10, page = 1 } = paginationDto;
     const offset = (page - 1) * limit;
     const employees = await this.employeeRepository.find({
       where: { status: true },
