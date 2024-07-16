@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
@@ -12,7 +13,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtPayload } from './interfaces';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +35,7 @@ export class AuthService {
       delete user.password;
       return {
         ...user,
-        token: this.getJwtToken({ id: user.id, email: user.email }),
+        token: this.getJwtToken({ id: user.id }),
       };
     } catch (error) {
       this.handleDBErrors(error);
@@ -45,7 +46,7 @@ export class AuthService {
     const { email, password } = loginUserDto;
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { id: true, email: true, password: true },
+      select: { id: true, password: true },
     });
 
     if (!user) throw new UnauthorizedException('Not valid credentials');
@@ -55,7 +56,7 @@ export class AuthService {
 
     return {
       ...user,
-      token: this.getJwtToken({ id: user.id, email: user.email }),
+      token: this.getJwtToken({ id: user.id }),
     };
   }
 
@@ -63,8 +64,15 @@ export class AuthService {
     return `This action returns all auth`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async findOne(id: string) {
+    const user = await this.userRepository.findOneBy({
+      id,
+      status: true,
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
   }
 
   update(id: number, updateAuthDto: UpdateAuthDto) {

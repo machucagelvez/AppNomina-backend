@@ -11,6 +11,7 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Employee } from './entities/employee.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class EmployeesService {
@@ -21,9 +22,12 @@ export class EmployeesService {
     private readonly employeeRepository: Repository<Employee>,
   ) {}
 
-  async create(createEmployeeDto: CreateEmployeeDto) {
+  async create(createEmployeeDto: CreateEmployeeDto, user: User) {
     try {
-      const employee = this.employeeRepository.create(createEmployeeDto);
+      const employee = this.employeeRepository.create({
+        ...createEmployeeDto,
+        user,
+      });
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {
@@ -53,7 +57,7 @@ export class EmployeesService {
     return employee;
   }
 
-  async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
+  async update(id: string, updateEmployeeDto: UpdateEmployeeDto, user: User) {
     const employee = await this.employeeRepository.preload({
       id,
       ...updateEmployeeDto,
@@ -62,6 +66,7 @@ export class EmployeesService {
     if (!employee) throw new NotFoundException('Employee not found');
 
     try {
+      employee.user;
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {

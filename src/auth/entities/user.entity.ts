@@ -1,9 +1,11 @@
+import { Employee } from 'src/employees/entities/employee.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -36,6 +38,9 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   photo: string;
+
+  @OneToMany(() => Employee, (employee) => employee.user)
+  employee?: Employee;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

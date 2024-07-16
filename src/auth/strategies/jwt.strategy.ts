@@ -5,7 +5,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from '../entities/user.entity';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { JwtPayload } from '../interfaces';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -21,10 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    const { email } = payload;
-    const user = this.userRepository.findOneBy({ email, status: true });
+    const { id } = payload;
+    const user = await this.userRepository.findOneBy({ id });
 
-    if (!user) throw new UnauthorizedException('Not valid token');
+    if (!user) throw new UnauthorizedException('Not valid credentials');
+    if (!user.status) throw new UnauthorizedException('Not valid credentials');
 
     return user;
   }

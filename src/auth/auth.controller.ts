@@ -6,10 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateUserDto, LoginUserDto } from './dto';
+import { Auth } from './decorators/auth.decorator';
+import { GetUser } from './decorators/get-user.decorator';
+import { User } from './entities/user.entity';
+import { ValidRoles } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -31,8 +37,9 @@ export class AuthController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @Auth(ValidRoles.user)
+  findOne(@GetUser('id') user: User, @Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.findOne(id);
   }
 
   @Patch(':id')
