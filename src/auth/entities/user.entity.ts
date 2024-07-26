@@ -27,6 +27,9 @@ export class User {
   @Column({ type: 'varchar', length: 64, unique: true })
   document: string;
 
+  @Column({ type: 'varchar', length: 8 })
+  document_type: string;
+
   @Column({ type: 'varchar', length: 255, select: false })
   password: string;
 

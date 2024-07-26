@@ -2,9 +2,11 @@ import { User } from 'src/auth/entities/user.entity';
 import {
   BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -23,6 +25,9 @@ export class Employee {
 
   @Column({ type: 'varchar', length: 64, unique: true })
   document: string;
+
+  @Column({ type: 'varchar', length: 8 })
+  document_type: string;
 
   @Column('text')
   eps: string;
@@ -48,7 +53,13 @@ export class Employee {
   @Column({ type: 'text', nullable: true })
   photo: string;
 
-  @ManyToOne(() => User, (user) => user.employee)
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.employee, { eager: true })
   user: User;
 
   @BeforeInsert()

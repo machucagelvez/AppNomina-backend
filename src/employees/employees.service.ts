@@ -35,21 +35,22 @@ export class EmployeesService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, page = 1 } = paginationDto;
     const offset = (page - 1) * limit;
     const employees = await this.employeeRepository.find({
-      where: { status: true },
+      where: { status: true, user: { id: user.id } },
       take: limit,
       skip: offset,
     });
     return employees;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user: User) {
     const employee = await this.employeeRepository.findOneBy({
       id,
       status: true,
+      user: { id: user.id },
     });
 
     if (!employee) throw new NotFoundException('Employee not found');
@@ -58,6 +59,7 @@ export class EmployeesService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto, user: User) {
+    await this.findOne(id, user);
     const employee = await this.employeeRepository.preload({
       id,
       ...updateEmployeeDto,
@@ -66,7 +68,6 @@ export class EmployeesService {
     if (!employee) throw new NotFoundException('Employee not found');
 
     try {
-      employee.user;
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {
@@ -74,8 +75,8 @@ export class EmployeesService {
     }
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, user: User) {
+    await this.findOne(id, user);
     await this.employeeRepository.update(id, { status: false });
     return 'Employee deleted';
   }

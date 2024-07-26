@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsOptional,
   IsString,
   IsStrongPassword,
@@ -20,6 +21,9 @@ export class CreateUserDto {
 
   @IsString()
   document: string;
+
+  @IsIn(['cc', 'ce', 'nit'])
+  document_type: string;
 
   @IsString()
   @IsStrongPassword()

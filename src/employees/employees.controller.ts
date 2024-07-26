@@ -29,13 +29,15 @@ export class EmployeesController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.employeesService.findAll(paginationDto);
+  @Auth(ValidRoles.user)
+  findAll(@Query() paginationDto: PaginationDto, @GetUser() user: User) {
+    return this.employeesService.findAll(paginationDto, user);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.employeesService.findOne(id);
+  @Auth(ValidRoles.user)
+  findOne(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
+    return this.employeesService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -49,7 +51,8 @@ export class EmployeesController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.employeesService.remove(id);
+  @Auth(ValidRoles.user)
+  remove(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
+    return this.employeesService.remove(id, user);
   }
 }
