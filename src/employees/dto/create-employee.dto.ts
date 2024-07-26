@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDate,
   IsEmail,
+  IsIn,
   IsNumber,
   IsNumberString,
   IsOptional,
@@ -26,6 +27,9 @@ export class CreateEmployeeDto {
   @IsNumberString()
   @MinLength(6)
   document: string;
+
+  @IsIn(['cc', 'ce', 'nit'])
+  document_type: string;
 
   @IsString()
   eps: string;
