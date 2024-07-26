@@ -1,4 +1,11 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/auth/entities/user.entity';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Employee {
@@ -40,6 +47,9 @@ export class Employee {
 
   @Column({ type: 'text', nullable: true })
   photo: string;
+
+  @ManyToOne(() => User, (user) => user.employee)
+  user: User;
 
   @BeforeInsert()
   parseDate() {
