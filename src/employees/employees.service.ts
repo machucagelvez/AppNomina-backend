@@ -31,7 +31,7 @@ export class EmployeesService {
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.handleDBErrors(error);
     }
   }
 
@@ -71,7 +71,7 @@ export class EmployeesService {
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.handleDBErrors(error);
     }
   }
 
@@ -81,7 +81,7 @@ export class EmployeesService {
     return 'Employee deleted';
   }
 
-  private handleDBExceptions(error: any) {
+  private handleDBErrors(error: any) {
     if (error.code === '23505') throw new BadRequestException(error.detail);
 
     this.logger.error(error);
