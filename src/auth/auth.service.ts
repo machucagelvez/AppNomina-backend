@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FiltersDto } from './dto/filters.dto';
 
 @Injectable()
 export class AuthService {
@@ -60,8 +61,15 @@ export class AuthService {
     };
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async findAll(filtersDto: FiltersDto) {
+    const { limit = 10, page = 1, status = 1 } = filtersDto;
+    const offset = (page - 1) * limit;
+    const users = await this.userRepository.find({
+      where: { status: !!status },
+      take: limit,
+      skip: offset,
+    });
+    return users;
   }
 
   async findOne(id: string) {
@@ -75,12 +83,31 @@ export class AuthService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} auth`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    await this.findOne(id);
+    const { password } = updateUserDto;
+    if (password) updateUserDto.password = bcrypt.hashSync(password, 10);
+
+    const user = await this.userRepository.preload({
+      id,
+      ...updateUserDto,
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    try {
+      await this.userRepository.save(user);
+      delete user.password;
+      return user;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async remove(id: string) {
+    await this.findOne(id);
+    await this.userRepository.update(id, { status: false });
+    return 'User deleted';
   }
 
   private getJwtToken(payload: JwtPayload) {
