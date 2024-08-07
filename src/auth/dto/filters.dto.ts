@@ -11,8 +11,8 @@ export class FiltersDto extends PaginationDto {
   @Type(() => Number)
   status?: number;
 
-  // @ApiProperty({ description: 'User role' })
-  // @IsOptional()
-  // @IsEnum(ValidRoles)
-  // role?: ValidRoles;
+  @ApiProperty({ description: 'User role' })
+  @IsOptional()
+  @IsEnum(ValidRoles)
+  role?: ValidRoles;
 }

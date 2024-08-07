@@ -62,13 +62,21 @@ export class AuthService {
   }
 
   async findAll(filtersDto: FiltersDto) {
-    const { limit = 10, page = 1, status = 1 } = filtersDto;
+    const { limit = 10, page = 1, status, role } = filtersDto;
     const offset = (page - 1) * limit;
-    const users = await this.userRepository.find({
-      where: { status: !!status },
-      take: limit,
-      skip: offset,
-    });
+
+    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    if (status !== undefined) {
+      const statusValue = !!status;
+      queryBuilder.andWhere('user.status = :statusValue', { statusValue });
+    }
+
+    if (role && role.length > 0)
+      queryBuilder.andWhere('user.role @> ARRAY[:role]', {
+        role,
+      });
+
+    const users = await queryBuilder.take(limit).skip(offset).getMany();
     return users;
   }
 
