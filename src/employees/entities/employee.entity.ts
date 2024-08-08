@@ -6,9 +6,15 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Contract } from './contract.entity';
+import { PaymentFrequency } from './payment-frequency.entity';
+import { Vacation } from 'src/vacation/entities/vacation.entity';
+import { Overtime } from 'src/overtime/entities/overtime.entity';
+import { PaymentHistory } from 'src/payment-history/entities/payment-history.entity';
 
 @Entity()
 export class Employee {
@@ -79,6 +85,27 @@ export class Employee {
   @ApiProperty()
   @ManyToOne(() => User, (user) => user.employee, { eager: true })
   user: User;
+
+  @ApiProperty()
+  @ManyToOne(() => Contract, (contract) => contract.employee, { eager: true })
+  contract: Contract;
+
+  @ApiProperty()
+  @ManyToOne(
+    () => PaymentFrequency,
+    (paymentFrequency) => paymentFrequency.employee,
+    { eager: true },
+  )
+  paymentFrequency: PaymentFrequency;
+
+  @OneToMany(() => Vacation, (vacation) => vacation.employee)
+  vacation: Vacation;
+
+  @OneToMany(() => Overtime, (overtime) => overtime.employee)
+  overtime: Overtime;
+
+  @OneToMany(() => PaymentHistory, (paymentHistory) => paymentHistory.employee)
+  paymentHistory: PaymentHistory;
 
   @BeforeInsert()
   parseDate() {
