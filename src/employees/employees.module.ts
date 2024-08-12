@@ -14,5 +14,6 @@ import { PaymentFrequency } from './entities/payment-frequency.entity';
     TypeOrmModule.forFeature([Employee, Contract, PaymentFrequency]),
     AuthModule,
   ],
+  exports: [EmployeesService],
 })
 export class EmployeesModule {}

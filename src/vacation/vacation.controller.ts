@@ -1,15 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { VacationService } from './vacation.service';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
+import { GetUser } from 'src/auth/decorators';
+import { User } from 'src/auth/entities/user.entity';
+import { Auth } from 'src/auth/dto';
 
 @Controller('vacation')
 export class VacationController {
   constructor(private readonly vacationService: VacationService) {}
 
   @Post()
-  create(@Body() createVacationDto: CreateVacationDto) {
-    return this.vacationService.create(createVacationDto);
+  @Auth()
+  create(@Body() createVacationDto: CreateVacationDto, @GetUser() user: User) {
+    return this.vacationService.create(createVacationDto, user);
   }
 
   @Get()
@@ -23,7 +35,10 @@ export class VacationController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVacationDto: UpdateVacationDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateVacationDto: UpdateVacationDto,
+  ) {
     return this.vacationService.update(+id, updateVacationDto);
   }
 
