@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeesModule } from './employees/employees.module';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
+import { VacationModule } from './vacation/vacation.module';
+import { OvertimeModule } from './overtime/overtime.module';
+import { PaymentHistoryModule } from './payment-history/payment-history.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { AuthModule } from './auth/auth.module';
     EmployeesModule,
     CommonModule,
     AuthModule,
+    VacationModule,
+    OvertimeModule,
+    PaymentHistoryModule,
   ],
 })
 export class AppModule {}
