@@ -4,7 +4,7 @@ import { IsEnum, IsIn, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ValidRoles } from '../interfaces';
 
-export class FiltersDto extends PaginationDto {
+export class FiltersUserDto extends PaginationDto {
   @ApiProperty({ description: 'User status' })
   @IsOptional()
   @IsIn([0, 1])

@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
@@ -11,6 +13,7 @@ import { Vacation } from './entities/vacation.entity';
 import { DataSource, Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { EmployeesService } from 'src/employees/employees.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class VacationService {
@@ -41,9 +44,13 @@ export class VacationService {
         const lastEndDate = new Date(last_vacation.end_date);
         const newStartDate = new Date(`${createVacationDto.start_date}`);
         const newEndDate = new Date(`${createVacationDto.end_date}`);
+        const today = new Date();
 
         if (newStartDate <= lastEndDate || newStartDate > newEndDate)
           throw new BadRequestException('Invalid period');
+
+        if (lastEndDate >= today)
+          throw new ForbiddenException('The current period has not ended');
 
         await queryRunner.manager.update(Vacation, last_vacation.id, {
           last_taken: false,
@@ -66,20 +73,54 @@ export class VacationService {
     }
   }
 
-  findAll() {
-    return `This action returns all vacation`;
+  async findAll(paginationDto: PaginationDto, employeeId: string) {
+    const { limit = 10, page = 1 } = paginationDto;
+    const offset = (page - 1) * limit;
+    const vacations = await this.vacationRepository.find({
+      where: { employee: { id: employeeId } },
+      take: limit,
+      skip: offset,
+    });
+    return vacations;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vacation`;
+  async findOne(id: number) {
+    const vacation = await this.vacationRepository.findOneBy({ id });
+    if (!vacation) throw new NotFoundException('Vacation not found');
+
+    return vacation;
   }
 
-  update(id: number, updateVacationDto: UpdateVacationDto) {
-    return `This action updates a #${id} vacation`;
+  async update(id: number, updateVacationDto: UpdateVacationDto) {
+    const vacation = await this.vacationRepository.preload({
+      id,
+      ...updateVacationDto,
+    });
+    if (!vacation) throw new NotFoundException('Vacation not found');
+
+    const endDate = new Date(`${vacation.end_date}`);
+    const startDate = new Date(`${vacation.start_date}`);
+    if (endDate <= startDate) throw new BadRequestException('Invalid period');
+
+    try {
+      await this.vacationRepository.save(vacation);
+      return vacation;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vacation`;
+  async remove(id: number) {
+    const vacation = await this.findOne(id);
+    if (vacation.last_taken === false)
+      throw new ForbiddenException('Cannot delete past periods');
+
+    try {
+      await this.vacationRepository.delete(id);
+      return 'Vacation deleted';
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
   private handleDBErrors(error: any) {

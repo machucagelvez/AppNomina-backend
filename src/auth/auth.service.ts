@@ -14,7 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { FiltersDto } from './dto/filters.dto';
+import { FiltersUserDto } from './dto/filters-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -61,8 +61,8 @@ export class AuthService {
     };
   }
 
-  async findAll(filtersDto: FiltersDto) {
-    const { limit = 10, page = 1, status, role } = filtersDto;
+  async findAll(filtersUserDto: FiltersUserDto) {
+    const { limit = 10, page = 1, status, role } = filtersUserDto;
     const offset = (page - 1) * limit;
 
     const queryBuilder = this.userRepository.createQueryBuilder('user');
