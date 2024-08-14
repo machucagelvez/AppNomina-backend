@@ -45,10 +45,10 @@ export class User {
   @OneToMany(() => Employee, (employee) => employee.user)
   employee?: Employee;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
   @BeforeInsert()

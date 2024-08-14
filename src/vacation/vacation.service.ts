@@ -40,13 +40,17 @@ export class VacationService {
         last_taken: true,
       });
 
-      if (last_vacation) {
-        const lastEndDate = new Date(last_vacation.end_date);
-        const newStartDate = new Date(`${createVacationDto.start_date}`);
-        const newEndDate = new Date(`${createVacationDto.end_date}`);
-        const today = new Date();
+      const newStartDate = createVacationDto.start_date;
+      const newEndDate = createVacationDto.end_date;
+      const today = new Date();
 
-        if (newStartDate <= lastEndDate || newStartDate > newEndDate)
+      if (newStartDate > newEndDate)
+        throw new BadRequestException('Invalid period');
+
+      if (last_vacation) {
+        const lastEndDate = last_vacation.end_date;
+
+        if (newStartDate <= lastEndDate)
           throw new BadRequestException('Invalid period');
 
         if (lastEndDate >= today)
@@ -98,8 +102,8 @@ export class VacationService {
     });
     if (!vacation) throw new NotFoundException('Vacation not found');
 
-    const endDate = new Date(`${vacation.end_date}`);
-    const startDate = new Date(`${vacation.start_date}`);
+    const endDate = vacation.end_date;
+    const startDate = vacation.start_date;
     if (endDate <= startDate) throw new BadRequestException('Invalid period');
 
     try {
@@ -121,6 +125,17 @@ export class VacationService {
     } catch (error) {
       this.handleDBErrors(error);
     }
+  }
+
+  async getVacationDays(employeeId: string) {
+    const vacations = await this.vacationRepository.find({
+      where: { employee: { id: employeeId } },
+    });
+
+    const employeeStartDate =
+      await this.employeeRepository.getStartDate(employeeId);
+
+    return { vacations, employeeStartDate };
   }
 
   private handleDBErrors(error: any) {

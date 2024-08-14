@@ -76,6 +76,17 @@ export class EmployeesService {
     return 'Employee deleted';
   }
 
+  async getStartDate(id: string) {
+    const { start_date } = await this.employeeRepository
+      .createQueryBuilder('employee')
+      .select('employee.start_date')
+      .getOne();
+
+    if (!start_date) throw new NotFoundException('Employee not found');
+
+    return start_date;
+  }
+
   private handleDBErrors(error: any) {
     if (error.code === '23505') throw new BadRequestException(error.detail);
 

@@ -16,7 +16,7 @@ export class PaymentHistory {
   id: number;
 
   @ApiProperty()
-  @Column('date')
+  @Column('timestamptz')
   date: Date;
 
   @Column({ type: 'float' })
@@ -44,11 +44,11 @@ export class PaymentHistory {
   holiday_daytime_overtime: number;
 
   @ApiProperty()
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
   @ApiProperty()

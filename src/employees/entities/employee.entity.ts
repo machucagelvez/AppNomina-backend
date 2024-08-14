@@ -59,11 +59,11 @@ export class Employee {
   salary: number;
 
   @ApiProperty()
-  @Column('date')
+  @Column('timestamptz')
   start_date: Date;
 
   @ApiProperty()
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   end_date: Date;
 
   @ApiProperty()
@@ -75,11 +75,11 @@ export class Employee {
   photo: string;
 
   @ApiProperty()
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
   @ApiProperty()

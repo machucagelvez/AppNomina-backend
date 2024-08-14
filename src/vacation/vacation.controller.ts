@@ -46,6 +46,7 @@ export class VacationController {
     return this.vacationService.findOne(+id);
   }
 
+  // Pending removal or approval
   @Patch(':id')
   @Auth(ValidRoles.user)
   update(
@@ -59,5 +60,11 @@ export class VacationController {
   @Auth(ValidRoles.user)
   remove(@Param('id') id: string) {
     return this.vacationService.remove(+id);
+  }
+
+  @Get('employee/:employeeId/days')
+  @Auth(ValidRoles.user)
+  getVacationDays(@Param('employeeId', ParseUUIDPipe) employeeId: string) {
+    return this.vacationService.getVacationDays(employeeId);
   }
 }
