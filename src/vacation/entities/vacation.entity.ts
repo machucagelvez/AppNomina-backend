@@ -24,6 +24,10 @@ export class Vacation {
   end_date: Date;
 
   @ApiProperty()
+  @Column({ type: 'bool', default: true })
+  last_taken: boolean;
+
+  @ApiProperty()
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

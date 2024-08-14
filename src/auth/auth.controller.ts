@@ -14,11 +14,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { Auth } from './decorators/auth.decorator';
-import { User } from './entities/user.entity';
 import { ValidRoles } from './interfaces';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { FiltersDto } from './dto/filters.dto';
+import { FiltersUserDto } from './dto/filters-user.dto';
 
 @ApiTags('Auth (Users)')
 @Controller('auth')
@@ -37,8 +35,8 @@ export class AuthController {
 
   @Get()
   @Auth(ValidRoles.admin)
-  findAll(@Query() filtersDto: FiltersDto) {
-    return this.authService.findAll(filtersDto);
+  findAll(@Query() filtersUserDto: FiltersUserDto) {
+    return this.authService.findAll(filtersUserDto);
   }
 
   @Get(':id')
