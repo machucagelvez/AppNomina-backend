@@ -1,11 +1,20 @@
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  addDays,
+  addYears,
+  differenceInDays,
+  differenceInYears,
+} from 'date-fns';
+const Holidays = require('date-holidays');
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +23,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { EmployeesService } from 'src/employees/employees.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
 
 @Injectable()
 export class VacationService {
@@ -22,13 +32,24 @@ export class VacationService {
   constructor(
     @InjectRepository(Vacation)
     private readonly vacationRepository: Repository<Vacation>,
-    private readonly employeeRepository: EmployeesService,
+
+    @Inject(forwardRef(() => EmployeesService))
+    private readonly employeesService: EmployeesService,
     private readonly dataSource: DataSource,
   ) {}
 
   async create(createVacationDto: CreateVacationDto, user: User) {
     const { employeeId } = createVacationDto;
-    const employee = await this.employeeRepository.findOne(employeeId, user);
+    const employee = await this.employeesService.findOne(employeeId, user);
+    const newStartDate = createVacationDto.start_date;
+    const newEndDate = createVacationDto.end_date;
+    const { pendingVacationDays } = await this.getVacationDays(employeeId);
+    const requestedDays = this.getWorkingDays(newStartDate, newEndDate);
+
+    if (requestedDays > pendingVacationDays)
+      throw new BadRequestException(
+        `Requested days exceed available days (${pendingVacationDays})`,
+      );
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -40,22 +61,12 @@ export class VacationService {
         last_taken: true,
       });
 
-      const newStartDate = createVacationDto.start_date;
-      const newEndDate = createVacationDto.end_date;
-      const today = new Date();
-
-      if (newStartDate > newEndDate)
-        throw new BadRequestException('Invalid period');
-
-      if (last_vacation) {
-        const lastEndDate = last_vacation.end_date;
-
-        if (newStartDate <= lastEndDate)
-          throw new BadRequestException('Invalid period');
-
-        if (lastEndDate >= today)
-          throw new ForbiddenException('The current period has not ended');
-
+      const updateLastTaken = this.validations(
+        last_vacation,
+        newStartDate,
+        newEndDate,
+      );
+      if (updateLastTaken) {
         await queryRunner.manager.update(Vacation, last_vacation.id, {
           last_taken: false,
         });
@@ -84,6 +95,7 @@ export class VacationService {
       where: { employee: { id: employeeId } },
       take: limit,
       skip: offset,
+      order: { end_date: 'ASC', last_taken: 'ASC' },
     });
     return vacations;
   }
@@ -96,19 +108,34 @@ export class VacationService {
   }
 
   async update(id: number, updateVacationDto: UpdateVacationDto) {
+    const currentVacation = await this.findOne(id);
     const vacation = await this.vacationRepository.preload({
       id,
       ...updateVacationDto,
     });
-    if (!vacation) throw new NotFoundException('Vacation not found');
+
+    if (!currentVacation.last_taken)
+      throw new ForbiddenException('Past periods cannot be modified');
+
+    const allVacations = await this.findAll(
+      { limit: 1000, page: 1 },
+      currentVacation.employee.id,
+    );
+
+    const lastVacation =
+      allVacations.length === 1
+        ? undefined
+        : allVacations[allVacations.length - 2];
 
     const endDate = vacation.end_date;
     const startDate = vacation.start_date;
-    if (endDate <= startDate) throw new BadRequestException('Invalid period');
+
+    // TODO: include exceeded days validation
+    this.validations(lastVacation, startDate, endDate);
 
     try {
-      await this.vacationRepository.save(vacation);
-      return vacation;
+      await this.vacationRepository.update(id, { ...updateVacationDto });
+      return currentVacation;
     } catch (error) {
       this.handleDBErrors(error);
     }
@@ -128,16 +155,99 @@ export class VacationService {
   }
 
   async getVacationDays(employeeId: string) {
-    const vacations = await this.vacationRepository.find({
-      where: { employee: { id: employeeId } },
-    });
+    const vacations = await this.findAll({ limit: 1000, page: 1 }, employeeId);
+
+    if (vacations.length === 0)
+      throw new NotFoundException('Vacation not found');
+
+    const lastVacation = vacations[vacations.length - 1];
+    const today = new Date();
+    // const startDate = eliminateTimeZone(new Date(lastVacation.start_date));
+    const endDate = eliminateTimeZone(new Date(lastVacation.end_date));
+    let returnDay = null;
+
+    // if (startDate > today) vacations.pop();
+    if (endDate >= today) returnDay = addDays(endDate, 1);
 
     const employeeStartDate =
-      await this.employeeRepository.getStartDate(employeeId);
+      await this.employeesService.getStartDate(employeeId);
 
-    return { vacations, employeeStartDate };
+    const takenVacationDays = vacations.reduce((sum, vacation) => {
+      const workingDays = this.getWorkingDays(
+        vacation.start_date,
+        vacation.end_date,
+      );
+      return sum + workingDays;
+    }, 0);
+
+    const workedYears = differenceInYears(
+      today,
+      eliminateTimeZone(employeeStartDate),
+    );
+    const nextDate = addYears(
+      eliminateTimeZone(employeeStartDate),
+      workedYears,
+    );
+    const workedDays = differenceInDays(today, nextDate);
+    const totalVacationDays = Math.floor(
+      workedYears * 15 + (workedDays * 15) / 360,
+    );
+
+    const pendingVacationDays = totalVacationDays - takenVacationDays;
+
+    return {
+      totalVacationDays,
+      takenVacationDays,
+      pendingVacationDays,
+      returnDay,
+    };
   }
 
+  private getWorkingDays(startDate: Date, endDate: Date) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const hd = new Holidays('CO');
+    const days = differenceInDays(end, start) + 1;
+    let workingDays = 0;
+    let currentDay = start;
+    for (let i = 0; i < days; i++) {
+      const workingDay =
+        currentDay.getUTCDay() === 0 ||
+        currentDay.getUTCDay() === 6 ||
+        hd.isHoliday(eliminateTimeZone(currentDay))
+          ? false
+          : true;
+      if (workingDay) workingDays++;
+      currentDay = addDays(currentDay, 1);
+    }
+
+    return workingDays;
+  }
+
+  private validations(
+    lastVacation: Vacation | undefined,
+    newStartDate: Date,
+    newEndDate: Date,
+  ) {
+    const today = new Date();
+    let updateLastTaken = false;
+    if (newStartDate > newEndDate)
+      throw new BadRequestException('Invalid period 1');
+
+    if (lastVacation) {
+      const lastEndDate = lastVacation.end_date;
+
+      if (newStartDate <= lastEndDate)
+        throw new BadRequestException('Invalid period 2');
+
+      const nextDay = addDays(eliminateTimeZone(new Date(lastEndDate)), 1);
+      if (nextDay >= new Date(today))
+        throw new ForbiddenException('The current period has not ended');
+
+      updateLastTaken = true;
+    }
+    return updateLastTaken;
+  }
   private handleDBErrors(error: any) {
     if (error.code === '23505') throw new BadRequestException(error.detail);
     if (error.status) throw error;

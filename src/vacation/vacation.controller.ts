@@ -46,7 +46,6 @@ export class VacationController {
     return this.vacationService.findOne(+id);
   }
 
-  // Pending removal or approval
   @Patch(':id')
   @Auth(ValidRoles.user)
   update(

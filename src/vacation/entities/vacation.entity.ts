@@ -36,6 +36,6 @@ export class Vacation {
   updatedAt: Date;
 
   @ApiProperty()
-  @ManyToOne(() => Employee, (employee) => employee.vacation)
+  @ManyToOne(() => Employee, (employee) => employee.vacation, { eager: true })
   employee: Employee;
 }
