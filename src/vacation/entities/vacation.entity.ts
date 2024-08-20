@@ -16,11 +16,11 @@ export class Vacation {
   id: number;
 
   @ApiProperty()
-  @Column('date')
+  @Column({ type: 'timestamptz' })
   start_date: Date;
 
   @ApiProperty()
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamptz' })
   end_date: Date;
 
   @ApiProperty()
@@ -28,14 +28,14 @@ export class Vacation {
   last_taken: boolean;
 
   @ApiProperty()
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
   @ApiProperty()
-  @ManyToOne(() => Employee, (employee) => employee.vacation)
+  @ManyToOne(() => Employee, (employee) => employee.vacation, { eager: true })
   employee: Employee;
 }

@@ -60,4 +60,10 @@ export class VacationController {
   remove(@Param('id') id: string) {
     return this.vacationService.remove(+id);
   }
+
+  @Get('employee/:employeeId/days')
+  @Auth(ValidRoles.user)
+  getVacationDays(@Param('employeeId', ParseUUIDPipe) employeeId: string) {
+    return this.vacationService.getVacationDays(employeeId);
+  }
 }

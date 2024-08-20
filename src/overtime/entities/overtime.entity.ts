@@ -17,7 +17,7 @@ export class Overtime {
   id: number;
 
   @ApiProperty()
-  @Column('date')
+  @Column('timestamptz')
   date: Date;
 
   @ApiProperty()
@@ -25,11 +25,11 @@ export class Overtime {
   hours: number;
 
   @ApiProperty()
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
   @ApiProperty()
