@@ -44,12 +44,6 @@ export class VacationService {
     const newStartDate = createVacationDto.start_date;
     const newEndDate = createVacationDto.end_date;
     const { pendingVacationDays } = await this.getVacationDays(employeeId);
-    const requestedDays = this.getWorkingDays(newStartDate, newEndDate);
-
-    if (requestedDays > pendingVacationDays)
-      throw new BadRequestException(
-        `Requested days exceed available days (${pendingVacationDays})`,
-      );
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -65,6 +59,7 @@ export class VacationService {
         last_vacation,
         newStartDate,
         newEndDate,
+        pendingVacationDays,
       );
       if (updateLastTaken) {
         await queryRunner.manager.update(Vacation, last_vacation.id, {
@@ -129,9 +124,12 @@ export class VacationService {
 
     const endDate = vacation.end_date;
     const startDate = vacation.start_date;
+    const { pendingVacationDays } = await this.getVacationDays(
+      currentVacation.employee.id,
+      true,
+    );
 
-    // TODO: include exceeded days validation
-    this.validations(lastVacation, startDate, endDate);
+    this.validations(lastVacation, startDate, endDate, pendingVacationDays);
 
     try {
       await this.vacationRepository.update(id, { ...updateVacationDto });
@@ -143,8 +141,14 @@ export class VacationService {
 
   async remove(id: number) {
     const vacation = await this.findOne(id);
-    if (vacation.last_taken === false)
-      throw new ForbiddenException('Cannot delete past periods');
+    const startDate = eliminateTimeZone(vacation.start_date);
+    const endDate = eliminateTimeZone(vacation.end_date);
+    const today = new Date();
+    if (endDate < today)
+      throw new ForbiddenException('Cannot delete a past period');
+
+    if (startDate <= today)
+      throw new ForbiddenException('Cannot delete a current period');
 
     try {
       await this.vacationRepository.delete(id);
@@ -154,7 +158,7 @@ export class VacationService {
     }
   }
 
-  async getVacationDays(employeeId: string) {
+  async getVacationDays(employeeId: string, updating: boolean = false) {
     const vacations = await this.findAll({ limit: 1000, page: 1 }, employeeId);
 
     if (vacations.length === 0)
@@ -162,11 +166,10 @@ export class VacationService {
 
     const lastVacation = vacations[vacations.length - 1];
     const today = new Date();
-    // const startDate = eliminateTimeZone(new Date(lastVacation.start_date));
     const endDate = eliminateTimeZone(new Date(lastVacation.end_date));
-    let returnDay = null;
+    let returnDay: Date = null;
 
-    // if (startDate > today) vacations.pop();
+    if (updating) vacations.pop();
     if (endDate >= today) returnDay = addDays(endDate, 1);
 
     const employeeStartDate =
@@ -228,17 +231,25 @@ export class VacationService {
     lastVacation: Vacation | undefined,
     newStartDate: Date,
     newEndDate: Date,
+    pendingVacationDays: number,
   ) {
+    const requestedDays = this.getWorkingDays(newStartDate, newEndDate);
+
+    if (requestedDays > pendingVacationDays)
+      throw new BadRequestException(
+        `Requested days exceed available days (${pendingVacationDays})`,
+      );
+
     const today = new Date();
     let updateLastTaken = false;
     if (newStartDate > newEndDate)
-      throw new BadRequestException('Invalid period 1');
+      throw new BadRequestException('Invalid period');
 
     if (lastVacation) {
       const lastEndDate = lastVacation.end_date;
 
       if (newStartDate <= lastEndDate)
-        throw new BadRequestException('Invalid period 2');
+        throw new BadRequestException('Overlapping periods');
 
       const nextDay = addDays(eliminateTimeZone(new Date(lastEndDate)), 1);
       if (nextDay >= new Date(today))
