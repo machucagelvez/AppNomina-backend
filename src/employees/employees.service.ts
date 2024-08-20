@@ -29,10 +29,14 @@ export class EmployeesService {
   ) {}
 
   async create(createEmployeeDto: CreateEmployeeDto, user: User) {
+    const { contractId, paymentFrequencyId, ...employeeData } =
+      createEmployeeDto;
     try {
       const employee = this.employeeRepository.create({
-        ...createEmployeeDto,
+        ...employeeData,
         user,
+        contract: { id: contractId },
+        paymentFrequency: { id: paymentFrequencyId },
       });
       await this.employeeRepository.save(employee);
       return employee;

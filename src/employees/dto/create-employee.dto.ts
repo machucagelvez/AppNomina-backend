@@ -74,4 +74,14 @@ export class CreateEmployeeDto {
   @IsString()
   @IsOptional()
   photo?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsPositive()
+  contractId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsPositive()
+  paymentFrequencyId: number;
 }
