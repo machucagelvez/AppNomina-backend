@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { VacationModule } from './vacation/vacation.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { PaymentHistoryModule } from './payment-history/payment-history.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentHistoryModule } from './payment-history/payment-history.module';
     VacationModule,
     OvertimeModule,
     PaymentHistoryModule,
+    SeedModule,
   ],
 })
 export class AppModule {}
