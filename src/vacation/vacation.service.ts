@@ -161,16 +161,18 @@ export class VacationService {
   async getVacationDays(employeeId: string, updating: boolean = false) {
     const vacations = await this.findAll({ limit: 1000, page: 1 }, employeeId);
 
-    if (vacations.length === 0)
+    if (vacations.length === 0 && updating)
       throw new NotFoundException('Vacation not found');
 
-    const lastVacation = vacations[vacations.length - 1];
-    const today = new Date();
-    const endDate = eliminateTimeZone(new Date(lastVacation.end_date));
     let returnDay: Date = null;
+    const today = new Date();
+    if (vacations.length > 0) {
+      const lastVacation = vacations[vacations.length - 1];
+      const endDate = eliminateTimeZone(new Date(lastVacation.end_date));
 
-    if (updating) vacations.pop();
-    if (endDate >= today) returnDay = addDays(endDate, 1);
+      if (updating) vacations.pop();
+      if (endDate >= today) returnDay = addDays(endDate, 1);
+    }
 
     const employeeStartDate =
       await this.employeesService.getStartDate(employeeId);

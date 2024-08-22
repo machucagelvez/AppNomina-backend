@@ -15,6 +15,8 @@ import { Employee } from './entities/employee.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { VacationService } from 'src/vacation/vacation.service';
+import { Contract } from './entities/contract.entity';
+import { PaymentFrequency } from './entities/payment-frequency.entity';
 
 @Injectable()
 export class EmployeesService {
@@ -23,6 +25,12 @@ export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+
+    @InjectRepository(Contract)
+    private readonly contractRepository: Repository<Contract>,
+
+    @InjectRepository(PaymentFrequency)
+    private readonly paymentFrequency: Repository<PaymentFrequency>,
 
     @Inject(forwardRef(() => VacationService))
     private readonly vacationService: VacationService,
@@ -99,6 +107,30 @@ export class EmployeesService {
     const { start_date } = employeeStartDate;
 
     return start_date;
+  }
+
+  async createContractType(name: string) {
+    try {
+      const contract = this.contractRepository.create({
+        name,
+      });
+      await this.contractRepository.save(contract);
+      return contract;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  async createPaymentFrequency(name: string) {
+    try {
+      const paymentFrequency = this.paymentFrequency.create({
+        name,
+      });
+      await this.paymentFrequency.save(paymentFrequency);
+      return paymentFrequency;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
   private handleDBErrors(error: any) {

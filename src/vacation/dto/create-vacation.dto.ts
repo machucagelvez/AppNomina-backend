@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsString } from 'class-validator';
+import { IsDate, IsUUID } from 'class-validator';
 
 export class CreateVacationDto {
   @ApiProperty()
@@ -14,6 +14,6 @@ export class CreateVacationDto {
   end_date: Date;
 
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   employeeId: string;
 }
