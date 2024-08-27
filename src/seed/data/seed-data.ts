@@ -9,6 +9,20 @@ interface SeedPaymentFrequency {
   name: string;
 }
 
+interface SeedLegalValue {
+  pension_percentage: number;
+  health_insurance_percentage: number;
+  transport_subsidy: number;
+  severance_pay_interest: number;
+  night_surcharge_percentage: number;
+  holiday_night_surcharge_percentage: number;
+  holiday_daytime_surcharge_percentage: number;
+  night_overtime_percentage: number;
+  daytime_overtime_percentage: number;
+  holiday_night_overtime_percentage: number;
+  holiday_daytime_overtime_percentage: number;
+}
+
 interface SeedUser {
   first_name: string;
   last_name: string;
@@ -41,6 +55,7 @@ interface SeedEmployee {
 interface SeedData {
   contract: SeedContract[];
   paymentFrequency: SeedPaymentFrequency[];
+  legalValue: SeedLegalValue[];
   users: SeedUser[];
   employees: SeedEmployee[];
 }
@@ -48,6 +63,21 @@ interface SeedData {
 export const seedData: SeedData = {
   contract: [{ name: 'indefinite-term' }, { name: 'fixed-term' }],
   paymentFrequency: [{ name: 'biweekly' }, { name: 'monthly' }],
+  legalValue: [
+    {
+      pension_percentage: 0.04,
+      health_insurance_percentage: 0.04,
+      transport_subsidy: 162000,
+      severance_pay_interest: 0.12,
+      night_surcharge_percentage: 0.35,
+      holiday_night_surcharge_percentage: 1.1,
+      holiday_daytime_surcharge_percentage: 0.75,
+      night_overtime_percentage: 1.75,
+      daytime_overtime_percentage: 1.25,
+      holiday_night_overtime_percentage: 2.5,
+      holiday_daytime_overtime_percentage: 2,
+    },
+  ],
   users: [
     {
       first_name: 'Empleador',

@@ -4,12 +4,14 @@ import { AuthService } from 'src/auth/auth.service';
 import { seedData } from './data/seed-data';
 import { EmployeesService } from 'src/employees/employees.service';
 import { User } from 'src/auth/entities/user.entity';
+import { LegalValuesService } from 'src/legal-values/legal-values.service';
 
 @Injectable()
 export class SeedService {
   constructor(
     private readonly userService: AuthService,
     private readonly employeesService: EmployeesService,
+    private readonly legalValuesService: LegalValuesService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -18,6 +20,7 @@ export class SeedService {
     const user = await this.insertUsers();
     await this.insertContractTypes();
     await this.insertPaymentFrequencies();
+    await this.insertLegalValues();
     await this.insertEmployees(user);
     return 'Seed executed';
   }
@@ -47,6 +50,15 @@ export class SeedService {
     const promises = [];
     seedPaymentFrequencies.forEach(({ name }) => {
       promises.push(this.employeesService.createPaymentFrequency(name));
+    });
+    await Promise.all(promises);
+  }
+
+  private async insertLegalValues() {
+    const seedLegalValues = seedData.legalValue;
+    const promises = [];
+    seedLegalValues.forEach((legalValue) => {
+      promises.push(this.legalValuesService.create(legalValue));
     });
     await Promise.all(promises);
   }
