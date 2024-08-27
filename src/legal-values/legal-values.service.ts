@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -32,8 +33,11 @@ export class LegalValuesService {
     return `This action returns all legalValues`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} legalValue`;
+  async findOne(id: number) {
+    const legalValues = await this.legalValueRepository.findOneBy({ id });
+    if (!legalValues) throw new NotFoundException('LegalValue not found');
+
+    return legalValues;
   }
 
   update(id: number, updateLegalValueDto: UpdateLegalValueDto) {

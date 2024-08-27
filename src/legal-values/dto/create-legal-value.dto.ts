@@ -15,7 +15,12 @@ export class CreateLegalValueDto {
   @ApiProperty()
   @IsNumber()
   @IsPositive()
-  transport_subsidy: number;
+  transportation_assistance: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsPositive()
+  minimum_wage: number;
 
   @ApiProperty()
   @IsNumber()

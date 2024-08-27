@@ -23,7 +23,11 @@ export class LegalValue {
 
   @ApiProperty()
   @Column({ type: 'float' })
-  transport_subsidy: number;
+  transportation_assistance: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  minimum_wage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
