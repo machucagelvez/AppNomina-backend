@@ -8,6 +8,7 @@ import { VacationModule } from './vacation/vacation.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { PaymentHistoryModule } from './payment-history/payment-history.module';
 import { SeedModule } from './seed/seed.module';
+import { LegalValuesModule } from './legal-values/legal-values.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SeedModule } from './seed/seed.module';
     OvertimeModule,
     PaymentHistoryModule,
     SeedModule,
+    LegalValuesModule,
   ],
 })
 export class AppModule {}

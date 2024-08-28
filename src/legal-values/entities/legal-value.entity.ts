@@ -1,55 +1,65 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Employee } from 'src/employees/entities/employee.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
-export class PaymentHistory {
+export class LegalValue {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty()
-  @Column('timestamptz')
-  date: Date;
+  @Column({ type: 'float' })
+  pension_percentage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  base_salary: number;
+  health_insurance_percentage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  night_surcharge: number;
+  transportation_assistance: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  holiday_night_surcharge: number;
+  minimum_wage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  holiday_daytime_surcharge: number;
+  severance_pay_interest: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  night_overtime: number;
+  night_surcharge_percentage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  daytime_overtime: number;
+  holiday_night_surcharge_percentage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  holiday_night_overtime: number;
+  holiday_daytime_surcharge_percentage: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  holiday_daytime_overtime: number;
+  night_overtime_percentage: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  daytime_overtime_percentage: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  holiday_night_overtime_percentage: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  holiday_daytime_overtime_percentage: number;
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz' })
@@ -58,8 +68,4 @@ export class PaymentHistory {
   @ApiProperty()
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-
-  @ApiProperty()
-  @ManyToOne(() => Employee, (employee) => employee.paymentHistory)
-  employee: Employee;
 }

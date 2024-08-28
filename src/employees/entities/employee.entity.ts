@@ -55,7 +55,7 @@ export class Employee {
   ccf: string;
 
   @ApiProperty()
-  @Column('numeric')
+  @Column('float')
   salary: number;
 
   @ApiProperty()
@@ -73,6 +73,10 @@ export class Employee {
   @ApiProperty()
   @Column({ type: 'text', nullable: true })
   photo: string;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  discount_date: string;
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz' })

@@ -76,6 +76,10 @@ export class CreateEmployeeDto {
   photo?: string;
 
   @ApiProperty()
+  @IsIn(['first', 'last', 'both', null])
+  discount_date: string;
+
+  @ApiProperty()
   @IsNumber()
   @IsPositive()
   contractId: number;

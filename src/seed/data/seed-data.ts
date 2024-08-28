@@ -1,12 +1,31 @@
 import { addMonths, format, subMonths, subYears } from 'date-fns';
 import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
 
+type ValidRoles = 'admin' | 'user';
+type ValidDocumentTypes = 'cc' | 'ce' | 'nit';
+type ValidDiscountDate = 'first' | 'last' | 'both' | null;
+
 interface SeedContract {
   name: string;
 }
 
 interface SeedPaymentFrequency {
   name: string;
+}
+
+interface SeedLegalValue {
+  pension_percentage: number;
+  health_insurance_percentage: number;
+  transportation_assistance: number;
+  minimum_wage: number;
+  severance_pay_interest: number;
+  night_surcharge_percentage: number;
+  holiday_night_surcharge_percentage: number;
+  holiday_daytime_surcharge_percentage: number;
+  night_overtime_percentage: number;
+  daytime_overtime_percentage: number;
+  holiday_night_overtime_percentage: number;
+  holiday_daytime_overtime_percentage: number;
 }
 
 interface SeedUser {
@@ -18,9 +37,6 @@ interface SeedUser {
   password: string;
   role: ValidRoles[];
 }
-
-type ValidRoles = 'admin' | 'user';
-type ValidDocumentTypes = 'cc' | 'ce' | 'nit';
 
 interface SeedEmployee {
   first_name: string;
@@ -34,6 +50,7 @@ interface SeedEmployee {
   salary: number;
   start_date: string;
   end_date?: string;
+  discount_date: ValidDiscountDate;
   contractId: number;
   paymentFrequencyId: number;
 }
@@ -41,6 +58,7 @@ interface SeedEmployee {
 interface SeedData {
   contract: SeedContract[];
   paymentFrequency: SeedPaymentFrequency[];
+  legalValue: SeedLegalValue[];
   users: SeedUser[];
   employees: SeedEmployee[];
 }
@@ -48,6 +66,22 @@ interface SeedData {
 export const seedData: SeedData = {
   contract: [{ name: 'indefinite-term' }, { name: 'fixed-term' }],
   paymentFrequency: [{ name: 'biweekly' }, { name: 'monthly' }],
+  legalValue: [
+    {
+      pension_percentage: 0.04,
+      health_insurance_percentage: 0.04,
+      transportation_assistance: 162000,
+      minimum_wage: 1300000,
+      severance_pay_interest: 0.12,
+      night_surcharge_percentage: 0.35,
+      holiday_night_surcharge_percentage: 1.1,
+      holiday_daytime_surcharge_percentage: 0.75,
+      night_overtime_percentage: 1.75,
+      daytime_overtime_percentage: 1.25,
+      holiday_night_overtime_percentage: 2.5,
+      holiday_daytime_overtime_percentage: 2,
+    },
+  ],
   users: [
     {
       first_name: 'Empleador',
@@ -83,6 +117,7 @@ export const seedData: SeedData = {
         subYears(eliminateTimeZone(new Date()), 1),
         'yyyy-MM-dd',
       ),
+      discount_date: null,
       contractId: 1,
       paymentFrequencyId: 1,
     },
@@ -100,6 +135,7 @@ export const seedData: SeedData = {
         subMonths(eliminateTimeZone(new Date()), 8),
         'yyyy-MM-dd',
       ),
+      discount_date: 'both',
       contractId: 1,
       paymentFrequencyId: 2,
     },
@@ -121,6 +157,7 @@ export const seedData: SeedData = {
         addMonths(eliminateTimeZone(new Date()), 7),
         'yyyy-MM-dd',
       ),
+      discount_date: 'first',
       contractId: 2,
       paymentFrequencyId: 2,
     },
