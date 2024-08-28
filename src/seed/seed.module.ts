@@ -4,10 +4,11 @@ import { SeedController } from './seed.controller';
 import { AuthModule } from 'src/auth/auth.module';
 import { EmployeesModule } from 'src/employees/employees.module';
 import { LegalValuesModule } from 'src/legal-values/legal-values.module';
+import { OvertimeModule } from 'src/overtime/overtime.module';
 
 @Module({
   controllers: [SeedController],
   providers: [SeedService],
-  imports: [AuthModule, EmployeesModule, LegalValuesModule],
+  imports: [AuthModule, EmployeesModule, LegalValuesModule, OvertimeModule],
 })
 export class SeedModule {}

@@ -10,5 +10,6 @@ import { OvertimeType } from './entities/overtime-type.entity';
   controllers: [OvertimeController],
   providers: [OvertimeService],
   imports: [TypeOrmModule.forFeature([Overtime, OvertimeType]), AuthModule],
+  exports: [OvertimeService],
 })
 export class OvertimeModule {}

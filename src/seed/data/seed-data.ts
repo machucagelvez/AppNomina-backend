@@ -28,6 +28,10 @@ interface SeedLegalValue {
   holiday_daytime_overtime_percentage: number;
 }
 
+interface SeedOvertimeType {
+  name: string;
+}
+
 interface SeedUser {
   first_name: string;
   last_name: string;
@@ -59,13 +63,14 @@ interface SeedData {
   contract: SeedContract[];
   paymentFrequency: SeedPaymentFrequency[];
   legalValue: SeedLegalValue[];
+  overtimeType: SeedOvertimeType[];
   users: SeedUser[];
   employees: SeedEmployee[];
 }
 
 export const seedData: SeedData = {
   contract: [{ name: 'indefinite-term' }, { name: 'fixed-term' }],
-  paymentFrequency: [{ name: 'biweekly' }, { name: 'monthly' }],
+  paymentFrequency: [{ name: 'monthly' }, { name: 'biweekly' }],
   legalValue: [
     {
       pension_percentage: 0.04,
@@ -81,6 +86,15 @@ export const seedData: SeedData = {
       holiday_night_overtime_percentage: 2.5,
       holiday_daytime_overtime_percentage: 2,
     },
+  ],
+  overtimeType: [
+    { name: 'night_surcharge' },
+    { name: 'holiday_night_surcharge' },
+    { name: 'holiday_daytime_surcharge' },
+    { name: 'night_overtime' },
+    { name: 'daytime_overtime' },
+    { name: 'holiday_night_overtime' },
+    { name: 'holiday_daytime_overtime' },
   ],
   users: [
     {
