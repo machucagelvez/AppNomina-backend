@@ -1,13 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Employee } from 'src/employees/entities/employee.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class PaymentHistory {
@@ -16,48 +9,56 @@ export class PaymentHistory {
   id: number;
 
   @ApiProperty()
-  @Column('timestamptz')
-  date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  start_period: string;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 10 })
+  end_period: string;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  base_salary: number;
+  period_salary: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
+  pension_discount: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  health_insurance_discount: number;
+
+  @ApiProperty()
+  @Column({ type: 'float', default: 0 })
+  transportation_assistance: number;
+
+  @ApiProperty()
+  @Column({ type: 'float', default: 0 })
   night_surcharge: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   holiday_night_surcharge: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   holiday_daytime_surcharge: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   night_overtime: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   daytime_overtime: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   holiday_night_overtime: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   holiday_daytime_overtime: number;
-
-  @ApiProperty()
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-
-  @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
 
   @ApiProperty()
   @ManyToOne(() => Employee, (employee) => employee.paymentHistory)
