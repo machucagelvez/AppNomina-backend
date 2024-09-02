@@ -15,6 +15,7 @@ import { PaymentHistory } from './entities/payment-history.entity';
 import { CreatePaymentHistoryDto } from './dto/create-payment-history.dto';
 import { UpdatePaymentHistoryDto } from './dto/update-payment-history.dto';
 import { CalculatePaymentDto } from './dto/calculate-payment.dto';
+import { OvertimeService } from 'src/overtime/overtime.service';
 
 @Injectable()
 export class PaymentHistoryService {
@@ -25,6 +26,7 @@ export class PaymentHistoryService {
 
     private readonly employeesService: EmployeesService,
     private readonly legalValuesService: LegalValuesService,
+    private readonly overtimeService: OvertimeService,
   ) {}
   async calculatePayment(calculatePaymentDto: CalculatePaymentDto, user: User) {
     const { employeeId, paymentHistoryId } = calculatePaymentDto;
@@ -85,15 +87,37 @@ export class PaymentHistoryService {
     if (!paymentHistoryId) {
       payment = await this.create({ ...paymentData, employeeId });
     } else {
-      // TODO: extra time logic
-      payment = await this.update(paymentHistoryId, { ...paymentData });
+      const surcharges = await this.overtimeService.findAll({
+        category: 'surcharge',
+        paymentHistoryId,
+      });
+      const overtime = await this.overtimeService.findAll({
+        category: 'overtime',
+        paymentHistoryId,
+      });
+
+      const totalSurcharges = surcharges.reduce((sum, surcharge) => {
+        return sum + surcharge.value;
+      }, 0);
+      const totalOvertime = overtime.reduce((sum, ot) => {
+        return sum + ot.value;
+      }, 0);
+
+      paymentData.total_surcharges = totalSurcharges;
+      paymentData.total_overtime = totalOvertime;
+
+      payment = await this.update(paymentHistoryId, {
+        ...paymentData,
+      });
     }
 
     const total =
       paymentData.period_salary -
       paymentData.pension_discount -
       paymentData.health_insurance_discount +
-      paymentData.transportation_assistance;
+      paymentData.transportation_assistance +
+      paymentData.total_surcharges +
+      paymentData.total_overtime;
 
     return { ...payment, total };
   }

@@ -41,43 +41,13 @@ export class CreatePaymentHistoryDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  night_surcharge?: number;
+  total_surcharges?: number;
 
   @ApiProperty()
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  holiday_night_surcharge?: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  holiday_daytime_surcharge?: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  night_overtime?: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  daytime_overtime?: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  holiday_night_overtime?: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  holiday_daytime_overtime?: number;
+  total_overtime?: number;
 
   @ApiProperty()
   @IsUUID()

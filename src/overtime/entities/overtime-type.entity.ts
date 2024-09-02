@@ -16,6 +16,10 @@ export class OvertimeType {
   @Column('float')
   percentage: number;
 
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 10 })
+  category: string;
+
   @OneToMany(() => Overtime, (overtime) => overtime.overtimeType)
   overtime: Overtime;
 }

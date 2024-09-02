@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsIn, IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class CreateOvertimeTypeDto {
   @ApiProperty()
@@ -10,4 +10,9 @@ export class CreateOvertimeTypeDto {
   @IsNumber()
   @IsPositive()
   percentage: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsIn(['surcharge', 'overtime'])
+  category: string;
 }

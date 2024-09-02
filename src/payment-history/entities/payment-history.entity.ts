@@ -41,31 +41,11 @@ export class PaymentHistory {
 
   @ApiProperty()
   @Column({ type: 'float', default: 0 })
-  night_surcharge: number;
+  total_surcharges: number;
 
   @ApiProperty()
   @Column({ type: 'float', default: 0 })
-  holiday_night_surcharge: number;
-
-  @ApiProperty()
-  @Column({ type: 'float', default: 0 })
-  holiday_daytime_surcharge: number;
-
-  @ApiProperty()
-  @Column({ type: 'float', default: 0 })
-  night_overtime: number;
-
-  @ApiProperty()
-  @Column({ type: 'float', default: 0 })
-  daytime_overtime: number;
-
-  @ApiProperty()
-  @Column({ type: 'float', default: 0 })
-  holiday_night_overtime: number;
-
-  @ApiProperty()
-  @Column({ type: 'float', default: 0 })
-  holiday_daytime_overtime: number;
+  total_overtime: number;
 
   @ApiProperty()
   @ManyToOne(() => Employee, (employee) => employee.paymentHistory)

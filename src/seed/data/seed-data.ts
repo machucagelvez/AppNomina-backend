@@ -4,6 +4,7 @@ import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
 type ValidRoles = 'admin' | 'user';
 type ValidDocumentTypes = 'cc' | 'ce' | 'nit';
 type ValidDiscountDate = 'first' | 'last' | 'both' | null;
+type ValidOvertimeTypesCtagories = 'surcharge' | 'overtime';
 
 interface SeedContract {
   name: string;
@@ -24,6 +25,7 @@ interface SeedLegalValue {
 interface SeedOvertimeType {
   name: string;
   percentage: number;
+  category: ValidOvertimeTypesCtagories;
 }
 
 interface SeedUser {
@@ -75,13 +77,17 @@ export const seedData: SeedData = {
     },
   ],
   overtimeType: [
-    { name: 'night_surcharge', percentage: 0.35 },
-    { name: 'holiday_night_surcharge', percentage: 1.1 },
-    { name: 'holiday_daytime_surcharge', percentage: 0.75 },
-    { name: 'night_overtime', percentage: 1.75 },
-    { name: 'daytime_overtime', percentage: 1.25 },
-    { name: 'holiday_night_overtime', percentage: 2.5 },
-    { name: 'holiday_daytime_overtime', percentage: 2 },
+    { name: 'night_surcharge', percentage: 0.35, category: 'surcharge' },
+    { name: 'holiday_night_surcharge', percentage: 1.1, category: 'surcharge' },
+    {
+      name: 'holiday_daytime_surcharge',
+      percentage: 0.75,
+      category: 'surcharge',
+    },
+    { name: 'night_overtime', percentage: 1.75, category: 'overtime' },
+    { name: 'daytime_overtime', percentage: 1.25, category: 'overtime' },
+    { name: 'holiday_night_overtime', percentage: 2.5, category: 'overtime' },
+    { name: 'holiday_daytime_overtime', percentage: 2, category: 'overtime' },
   ],
   users: [
     {

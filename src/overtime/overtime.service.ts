@@ -3,15 +3,16 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
-import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OvertimeType } from './entities/overtime-type.entity';
 import { Repository } from 'typeorm';
 import { Overtime } from './entities/overtime.entity';
 import { CreateOvertimeTypeDto } from './dto/create-overtime-type.dto';
 import { LegalValuesService } from 'src/legal-values/legal-values.service';
+import { OvertimeFiltersDto } from './dto/overtime-filters.dto';
 
 @Injectable()
 export class OvertimeService {
@@ -30,8 +31,9 @@ export class OvertimeService {
     const hourValue = minimum_wage / 240;
     const { employeeId, paymentHistoryId, overtimeTypeId, ...overtimeData } =
       createOvertimeDto;
-    // TODO: include overtime type percentage
-    overtimeData.value = overtimeData.hours * hourValue;
+    const { percentage } = await this.findOneOvertimeType(overtimeTypeId);
+    overtimeData.value = overtimeData.hours * hourValue * percentage;
+
     try {
       const overtime = this.overtimeRepository.create({
         ...overtimeData,
@@ -46,20 +48,20 @@ export class OvertimeService {
     }
   }
 
-  findAll() {
-    return `This action returns all overtime`;
-  }
+  async findAll(overtimeFiltersDto: OvertimeFiltersDto) {
+    const { category, paymentHistoryId } = overtimeFiltersDto;
+    const queryBuilder = this.overtimeRepository
+      .createQueryBuilder('overtime')
+      .innerJoin('overtime.overtimeType', 'overtimeType');
 
-  findOne(id: number) {
-    return `This action returns a #${id} overtime`;
-  }
+    if (paymentHistoryId)
+      queryBuilder.andWhere('overtime.paymentHistoryId = :paymentHistoryId', {
+        paymentHistoryId,
+      });
+    if (category)
+      queryBuilder.andWhere('overtimeType.category = :category', { category });
 
-  update(id: number, updateOvertimeDto: UpdateOvertimeDto) {
-    return `This action updates a #${id} overtime`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} overtime`;
+    return await queryBuilder.getMany();
   }
 
   async createOvertimeType(createOvertimeTypeDto: CreateOvertimeTypeDto) {
@@ -72,6 +74,12 @@ export class OvertimeService {
     } catch (error) {
       this.handleDBErrors(error);
     }
+  }
+
+  async findOneOvertimeType(id: number) {
+    const overtimeType = await this.overtimeTypeRepository.findOneBy({ id });
+    if (!overtimeType) throw new NotFoundException('Overtime type not found');
+    return overtimeType;
   }
 
   private handleDBErrors(error: any) {
