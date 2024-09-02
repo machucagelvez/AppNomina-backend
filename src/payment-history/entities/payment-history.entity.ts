@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Employee } from 'src/employees/entities/employee.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Overtime } from 'src/overtime/entities/overtime.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class PaymentHistory {
@@ -63,4 +70,8 @@ export class PaymentHistory {
   @ApiProperty()
   @ManyToOne(() => Employee, (employee) => employee.paymentHistory)
   employee: Employee;
+
+  @ApiProperty()
+  @OneToMany(() => Overtime, (overtime) => overtime.paymentHistory)
+  overtime: Overtime;
 }

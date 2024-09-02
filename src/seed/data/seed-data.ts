@@ -19,17 +19,11 @@ interface SeedLegalValue {
   transportation_assistance: number;
   minimum_wage: number;
   severance_pay_interest: number;
-  night_surcharge_percentage: number;
-  holiday_night_surcharge_percentage: number;
-  holiday_daytime_surcharge_percentage: number;
-  night_overtime_percentage: number;
-  daytime_overtime_percentage: number;
-  holiday_night_overtime_percentage: number;
-  holiday_daytime_overtime_percentage: number;
 }
 
 interface SeedOvertimeType {
   name: string;
+  percentage: number;
 }
 
 interface SeedUser {
@@ -78,23 +72,16 @@ export const seedData: SeedData = {
       transportation_assistance: 162000,
       minimum_wage: 1300000,
       severance_pay_interest: 0.12,
-      night_surcharge_percentage: 0.35,
-      holiday_night_surcharge_percentage: 1.1,
-      holiday_daytime_surcharge_percentage: 0.75,
-      night_overtime_percentage: 1.75,
-      daytime_overtime_percentage: 1.25,
-      holiday_night_overtime_percentage: 2.5,
-      holiday_daytime_overtime_percentage: 2,
     },
   ],
   overtimeType: [
-    { name: 'night_surcharge' },
-    { name: 'holiday_night_surcharge' },
-    { name: 'holiday_daytime_surcharge' },
-    { name: 'night_overtime' },
-    { name: 'daytime_overtime' },
-    { name: 'holiday_night_overtime' },
-    { name: 'holiday_daytime_overtime' },
+    { name: 'night_surcharge', percentage: 0.35 },
+    { name: 'holiday_night_surcharge', percentage: 1.1 },
+    { name: 'holiday_daytime_surcharge', percentage: 0.75 },
+    { name: 'night_overtime', percentage: 1.75 },
+    { name: 'daytime_overtime', percentage: 1.25 },
+    { name: 'holiday_night_overtime', percentage: 2.5 },
+    { name: 'holiday_daytime_overtime', percentage: 2 },
   ],
   users: [
     {

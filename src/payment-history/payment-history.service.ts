@@ -31,7 +31,7 @@ export class PaymentHistoryService {
     const { paymentFrequency, salary, discount_date } =
       await this.employeesService.findOne(employeeId, user);
 
-    const legalValues = await this.legalValuesService.findOne(1);
+    const legalValues = await this.legalValuesService.findValues();
     const today = new Date();
 
     const paymentData: CreatePaymentHistoryDto = {

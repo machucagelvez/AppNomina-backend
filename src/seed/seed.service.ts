@@ -44,11 +44,6 @@ export class SeedService {
     for (const { name } of seedContractTypes) {
       await this.employeesService.createContractType(name);
     }
-    // const promises = [];
-    // seedContractTypes.forEach(({ name }) => {
-    //   promises.push(this.employeesService.createContractType(name));
-    // });
-    // await Promise.all(promises);
   }
 
   private async insertPaymentFrequencies() {
@@ -56,11 +51,6 @@ export class SeedService {
     for (const { name } of seedPaymentFrequencies) {
       await this.employeesService.createPaymentFrequency(name);
     }
-    // const promises = [];
-    // seedPaymentFrequencies.forEach(({ name }) => {
-    //   promises.push(this.employeesService.createPaymentFrequency(name));
-    // });
-    // await Promise.all(promises);
   }
 
   private async insertLegalValues() {
@@ -74,8 +64,8 @@ export class SeedService {
 
   private async insertOvertimeType() {
     const seedOvertimeType = seedData.overtimeType;
-    for (const { name } of seedOvertimeType) {
-      await this.overtimeService.createOvertimeType(name);
+    for (const overtimeType of seedOvertimeType) {
+      await this.overtimeService.createOvertimeType(overtimeType);
     }
   }
 

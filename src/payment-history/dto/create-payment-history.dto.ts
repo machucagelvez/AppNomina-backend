@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDate,
+  IsDateString,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -9,11 +9,11 @@ import {
 
 export class CreatePaymentHistoryDto {
   @ApiProperty()
-  @IsDate()
+  @IsDateString()
   start_period: string;
 
   @ApiProperty()
-  @IsDate()
+  @IsDateString()
   end_period: string;
 
   @ApiProperty()

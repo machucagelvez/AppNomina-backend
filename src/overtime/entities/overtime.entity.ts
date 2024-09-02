@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { OvertimeType } from './overtime-type.entity';
+import { PaymentHistory } from 'src/payment-history/entities/payment-history.entity';
 
 @Entity()
 export class Overtime {
@@ -17,12 +18,16 @@ export class Overtime {
   id: number;
 
   @ApiProperty()
-  @Column('timestamptz')
-  date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  date: string;
 
   @ApiProperty()
   @Column({ type: 'int' })
   hours: number;
+
+  @ApiProperty()
+  @Column({ type: 'float' })
+  value: number;
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz' })
@@ -39,4 +44,8 @@ export class Overtime {
   @ApiProperty()
   @ManyToOne(() => OvertimeType, (overtimeType) => overtimeType.overtime)
   overtimeType: OvertimeType;
+
+  @ApiProperty()
+  @ManyToOne(() => PaymentHistory, (paymentHistory) => paymentHistory.overtime)
+  paymentHistory: PaymentHistory;
 }
