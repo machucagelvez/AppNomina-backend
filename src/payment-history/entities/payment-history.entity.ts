@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Employee } from 'src/employees/entities/employee.entity';
+import { Overtime } from 'src/overtime/entities/overtime.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -16,50 +16,42 @@ export class PaymentHistory {
   id: number;
 
   @ApiProperty()
-  @Column('timestamptz')
-  date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  start_period: string;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 10 })
+  end_period: string;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  base_salary: number;
+  period_salary: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  night_surcharge: number;
+  pension_discount: number;
 
   @ApiProperty()
   @Column({ type: 'float' })
-  holiday_night_surcharge: number;
+  health_insurance_discount: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
-  holiday_daytime_surcharge: number;
+  @Column({ type: 'float', default: 0 })
+  transportation_assistance: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
-  night_overtime: number;
+  @Column({ type: 'float', default: 0 })
+  total_surcharges: number;
 
   @ApiProperty()
-  @Column({ type: 'float' })
-  daytime_overtime: number;
-
-  @ApiProperty()
-  @Column({ type: 'float' })
-  holiday_night_overtime: number;
-
-  @ApiProperty()
-  @Column({ type: 'float' })
-  holiday_daytime_overtime: number;
-
-  @ApiProperty()
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-
-  @ApiProperty()
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
+  @Column({ type: 'float', default: 0 })
+  total_overtime: number;
 
   @ApiProperty()
   @ManyToOne(() => Employee, (employee) => employee.paymentHistory)
   employee: Employee;
+
+  @ApiProperty()
+  @OneToMany(() => Overtime, (overtime) => overtime.paymentHistory)
+  overtime: Overtime;
 }

@@ -33,8 +33,8 @@ export class LegalValuesService {
     return `This action returns all legalValues`;
   }
 
-  async findOne(id: number) {
-    const legalValues = await this.legalValueRepository.findOneBy({ id });
+  async findValues() {
+    const legalValues = await this.legalValueRepository.findOneBy({ id: 1 });
     if (!legalValues) throw new NotFoundException('LegalValue not found');
 
     return legalValues;

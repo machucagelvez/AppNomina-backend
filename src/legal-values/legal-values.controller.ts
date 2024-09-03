@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { LegalValuesService } from './legal-values.service';
 import { CreateLegalValueDto } from './dto/create-legal-value.dto';
 import { UpdateLegalValueDto } from './dto/update-legal-value.dto';
@@ -18,12 +26,15 @@ export class LegalValuesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.legalValuesService.findOne(+id);
+  findValues() {
+    return this.legalValuesService.findValues();
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLegalValueDto: UpdateLegalValueDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateLegalValueDto: UpdateLegalValueDto,
+  ) {
     return this.legalValuesService.update(+id, updateLegalValueDto);
   }
 

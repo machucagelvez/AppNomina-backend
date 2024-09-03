@@ -5,6 +5,7 @@ import { seedData } from './data/seed-data';
 import { EmployeesService } from 'src/employees/employees.service';
 import { User } from 'src/auth/entities/user.entity';
 import { LegalValuesService } from 'src/legal-values/legal-values.service';
+import { OvertimeService } from 'src/overtime/overtime.service';
 
 @Injectable()
 export class SeedService {
@@ -12,6 +13,7 @@ export class SeedService {
     private readonly userService: AuthService,
     private readonly employeesService: EmployeesService,
     private readonly legalValuesService: LegalValuesService,
+    private readonly overtimeService: OvertimeService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -21,6 +23,7 @@ export class SeedService {
     await this.insertContractTypes();
     await this.insertPaymentFrequencies();
     await this.insertLegalValues();
+    await this.insertOvertimeType();
     await this.insertEmployees(user);
     return 'Seed executed';
   }
@@ -38,20 +41,16 @@ export class SeedService {
 
   private async insertContractTypes() {
     const seedContractTypes = seedData.contract;
-    const promises = [];
-    seedContractTypes.forEach(({ name }) => {
-      promises.push(this.employeesService.createContractType(name));
-    });
-    await Promise.all(promises);
+    for (const { name } of seedContractTypes) {
+      await this.employeesService.createContractType(name);
+    }
   }
 
   private async insertPaymentFrequencies() {
     const seedPaymentFrequencies = seedData.paymentFrequency;
-    const promises = [];
-    seedPaymentFrequencies.forEach(({ name }) => {
-      promises.push(this.employeesService.createPaymentFrequency(name));
-    });
-    await Promise.all(promises);
+    for (const { name } of seedPaymentFrequencies) {
+      await this.employeesService.createPaymentFrequency(name);
+    }
   }
 
   private async insertLegalValues() {
@@ -61,6 +60,13 @@ export class SeedService {
       promises.push(this.legalValuesService.create(legalValue));
     });
     await Promise.all(promises);
+  }
+
+  private async insertOvertimeType() {
+    const seedOvertimeType = seedData.overtimeType;
+    for (const overtimeType of seedOvertimeType) {
+      await this.overtimeService.createOvertimeType(overtimeType);
+    }
   }
 
   private async insertEmployees(user: User) {

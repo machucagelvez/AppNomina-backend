@@ -3,75 +3,169 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { endOfMonth, format, setDate, startOfMonth } from 'date-fns';
 import { EmployeesService } from 'src/employees/employees.service';
 import { LegalValuesService } from 'src/legal-values/legal-values.service';
 import { User } from 'src/auth/entities/user.entity';
-import { Payment } from './interfaces/payment.interface';
-import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
-import { endOfMonth, format, setDate, startOfMonth } from 'date-fns';
+import { PaymentHistory } from './entities/payment-history.entity';
+import { CreatePaymentHistoryDto } from './dto/create-payment-history.dto';
+import { UpdatePaymentHistoryDto } from './dto/update-payment-history.dto';
+import { CalculatePaymentDto } from './dto/calculate-payment.dto';
+import { OvertimeService } from 'src/overtime/overtime.service';
 
 @Injectable()
 export class PaymentHistoryService {
+  private readonly logger = new Logger('PaymentHistoryService');
   constructor(
+    @InjectRepository(PaymentHistory)
+    private readonly paymentHistoryRepository: Repository<PaymentHistory>,
+
     private readonly employeesService: EmployeesService,
     private readonly legalValuesService: LegalValuesService,
+    private readonly overtimeService: OvertimeService,
   ) {}
-  async calculatePayment(employeeId: string, user: User) {
+  async calculatePayment(calculatePaymentDto: CalculatePaymentDto, user: User) {
+    const { employeeId, paymentHistoryId } = calculatePaymentDto;
     const { paymentFrequency, salary, discount_date } =
       await this.employeesService.findOne(employeeId, user);
 
-    const legalValues = await this.legalValuesService.findOne(1);
+    const legalValues = await this.legalValuesService.findValues();
+    const today = new Date();
 
-    const payment: Payment = {
-      baseSalary: salary,
-      pensionDiscount: salary * legalValues.pension_percentage,
-      healthInsuranceDiscount: salary * legalValues.health_insurance_percentage,
-      transportationAssistance: 0,
+    const paymentData: CreatePaymentHistoryDto = {
+      period_salary: salary,
+      pension_discount: salary * legalValues.pension_percentage,
+      health_insurance_discount:
+        salary * legalValues.health_insurance_percentage,
+      transportation_assistance: 0,
+      start_period: format(startOfMonth(today), 'yyyy-MM-dd'),
+      end_period: format(endOfMonth(today), 'yyyy-MM-dd'),
     };
 
-    const today = eliminateTimeZone(new Date());
-    let firstDay = format(startOfMonth(today), 'dd/MM/yyyy');
-    let lastDay = format(endOfMonth(today), 'dd/MM/yyyy');
-
     if (salary <= legalValues.minimum_wage * 2)
-      payment.transportationAssistance = legalValues.transportation_assistance;
+      paymentData.transportation_assistance =
+        legalValues.transportation_assistance;
 
-    switch (paymentFrequency.id) {
-      case 1:
-        payment.period = `${firstDay} - ${lastDay}`;
+    if (paymentFrequency.id === 2) {
+      if (discount_date === 'both') {
+        paymentData.pension_discount = paymentData.pension_discount / 2;
+        paymentData.health_insurance_discount =
+          paymentData.health_insurance_discount / 2;
+      }
 
-      case 2:
-        if (discount_date === 'both') {
-          payment.pensionDiscount = payment.pensionDiscount / 2;
-          payment.healthInsuranceDiscount = payment.healthInsuranceDiscount / 2;
+      if (today.getDate() >= 0 && today.getDate() <= 15) {
+        paymentData.end_period = format(setDate(today, 15), 'yyyy-MM-dd');
+
+        if (discount_date === 'last') {
+          paymentData.pension_discount = 0;
+          paymentData.health_insurance_discount = 0;
         }
-        if (today.getDate() >= 0 && today.getDate() <= 15) {
-          lastDay = format(setDate(today, 15), 'dd/MM/yyyy');
+      } else {
+        paymentData.start_period = format(setDate(today, 16), 'yyyy-MM-dd');
 
-          if (discount_date === 'last') {
-            payment.pensionDiscount = 0;
-            payment.healthInsuranceDiscount = 0;
-          }
-        } else {
-          firstDay = format(setDate(today, 16), 'dd/MM/yyyy');
-
-          if (discount_date === 'first') {
-            payment.pensionDiscount = 0;
-            payment.healthInsuranceDiscount = 0;
-          }
+        if (discount_date === 'first') {
+          paymentData.pension_discount = 0;
+          paymentData.health_insurance_discount = 0;
         }
+      }
 
-        payment.transportationAssistance = payment.transportationAssistance / 2;
-        payment.period = `${firstDay} - ${lastDay}`;
-        payment.baseSalary = salary / 2;
+      paymentData.transportation_assistance =
+        paymentData.transportation_assistance / 2;
+      paymentData.period_salary = salary / 2;
     }
 
-    payment.total =
-      payment.baseSalary -
-      payment.pensionDiscount -
-      payment.healthInsuranceDiscount +
-      payment.transportationAssistance;
-    return payment;
+    try {
+      let payment: PaymentHistory;
+      if (!paymentHistoryId) {
+        const paymentExists = await this.paymentHistoryRepository.findOne({
+          where: {
+            employee: { id: employeeId },
+            start_period: paymentData.start_period,
+          },
+        });
+        if (paymentExists)
+          throw new BadRequestException('Payment already exists');
+
+        payment = await this.create({ ...paymentData, employeeId });
+      } else {
+        const surcharges = await this.overtimeService.findAll({
+          category: 'surcharge',
+          paymentHistoryId,
+        });
+        const overtime = await this.overtimeService.findAll({
+          category: 'overtime',
+          paymentHistoryId,
+        });
+
+        const totalSurcharges = surcharges.reduce((sum, surcharge) => {
+          return sum + surcharge.value;
+        }, 0);
+        const totalOvertime = overtime.reduce((sum, ot) => {
+          return sum + ot.value;
+        }, 0);
+
+        paymentData.total_surcharges = totalSurcharges;
+        paymentData.total_overtime = totalOvertime;
+
+        payment = await this.update(paymentHistoryId, employeeId, {
+          ...paymentData,
+        });
+      }
+      const total =
+        payment.period_salary -
+        payment.pension_discount -
+        payment.health_insurance_discount +
+        payment.transportation_assistance +
+        payment.total_surcharges +
+        payment.total_overtime;
+
+      return { baseSalary: salary, ...payment, total };
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  async create(createPaymentHistoryDto: CreatePaymentHistoryDto) {
+    const { employeeId, ...paymentHistoryData } = createPaymentHistoryDto;
+    try {
+      const payment = this.paymentHistoryRepository.create({
+        ...paymentHistoryData,
+        employee: { id: employeeId },
+      });
+      await this.paymentHistoryRepository.save(payment);
+      return payment;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  async update(
+    id: number,
+    employeeId: string,
+    updatePaymentHistoryDto: UpdatePaymentHistoryDto,
+  ) {
+    const payment = await this.paymentHistoryRepository.findOne({
+      where: { id, employee: { id: employeeId } },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+
+    try {
+      await this.paymentHistoryRepository.update(id, updatePaymentHistoryDto);
+      return payment;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  private handleDBErrors(error: any) {
+    if (error.code === '23505') throw new BadRequestException(error.detail);
+    if (error.status) throw error;
+
+    this.logger.error(error);
+    throw new InternalServerErrorException('Unexpected error');
   }
 }

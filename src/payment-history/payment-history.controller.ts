@@ -1,31 +1,24 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { PaymentHistoryService } from './payment-history.service';
-import { CreatePaymentHistoryDto } from './dto/create-payment-history.dto';
-import { UpdatePaymentHistoryDto } from './dto/update-payment-history.dto';
 import { Auth } from 'src/auth/dto';
 import { ValidRoles } from 'src/auth/interfaces';
 import { User } from 'src/auth/entities/user.entity';
 import { GetUser } from 'src/auth/decorators';
+import { CalculatePaymentDto } from './dto/calculate-payment.dto';
 
 @Controller('payment')
 export class PaymentHistoryController {
   constructor(private readonly paymentHistoryService: PaymentHistoryService) {}
 
-  @Get(':employeeId')
+  @Post('calculate')
   @Auth(ValidRoles.user)
   calculatePayment(
-    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+    @Body() calculatePaymentDto: CalculatePaymentDto,
     @GetUser() user: User,
   ) {
-    return this.paymentHistoryService.calculatePayment(employeeId, user);
+    return this.paymentHistoryService.calculatePayment(
+      calculatePaymentDto,
+      user,
+    );
   }
 }
