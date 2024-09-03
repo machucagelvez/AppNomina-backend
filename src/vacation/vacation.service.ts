@@ -24,6 +24,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { EmployeesService } from 'src/employees/employees.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class VacationService {
@@ -36,6 +37,7 @@ export class VacationService {
     @Inject(forwardRef(() => EmployeesService))
     private readonly employeesService: EmployeesService,
     private readonly dataSource: DataSource,
+    private readonly commonService: CommonService,
   ) {}
 
   async create(createVacationDto: CreateVacationDto, user: User) {
@@ -79,7 +81,7 @@ export class VacationService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -135,7 +137,7 @@ export class VacationService {
       await this.vacationRepository.update(id, { ...updateVacationDto });
       return currentVacation;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -154,7 +156,7 @@ export class VacationService {
       await this.vacationRepository.delete(id);
       return 'Vacation deleted';
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -260,12 +262,5 @@ export class VacationService {
       updateLastTaken = true;
     }
     return updateLastTaken;
-  }
-  private handleDBErrors(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-    if (error.status) throw error;
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error');
   }
 }

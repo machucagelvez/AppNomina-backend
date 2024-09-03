@@ -13,6 +13,7 @@ import { Overtime } from './entities/overtime.entity';
 import { CreateOvertimeTypeDto } from './dto/create-overtime-type.dto';
 import { LegalValuesService } from 'src/legal-values/legal-values.service';
 import { OvertimeFiltersDto } from './dto/overtime-filters.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class OvertimeService {
@@ -25,6 +26,7 @@ export class OvertimeService {
     private readonly overtimeTypeRepository: Repository<OvertimeType>,
 
     private readonly legalValuesService: LegalValuesService,
+    private readonly commonService: CommonService,
   ) {}
   async create(createOvertimeDto: CreateOvertimeDto) {
     const { minimum_wage } = await this.legalValuesService.findValues();
@@ -44,7 +46,7 @@ export class OvertimeService {
       await this.overtimeRepository.save(overtime);
       return overtime;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -72,7 +74,7 @@ export class OvertimeService {
       await this.overtimeTypeRepository.save(overtimeType);
       return overtimeType;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -80,12 +82,5 @@ export class OvertimeService {
     const overtimeType = await this.overtimeTypeRepository.findOneBy({ id });
     if (!overtimeType) throw new NotFoundException('Overtime type not found');
     return overtimeType;
-  }
-
-  private handleDBErrors(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error');
   }
 }

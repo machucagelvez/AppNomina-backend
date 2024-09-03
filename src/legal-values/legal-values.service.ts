@@ -1,15 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LegalValue } from './entities/legal-value.entity';
 import { CreateLegalValueDto } from './dto/create-legal-value.dto';
-import { UpdateLegalValueDto } from './dto/update-legal-value.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class LegalValuesService {
@@ -18,6 +12,8 @@ export class LegalValuesService {
   constructor(
     @InjectRepository(LegalValue)
     private readonly legalValueRepository: Repository<LegalValue>,
+
+    private readonly commonService: CommonService,
   ) {}
   async create(createLegalValueDto: CreateLegalValueDto) {
     try {
@@ -25,12 +21,8 @@ export class LegalValuesService {
       await this.legalValueRepository.save(legalValues);
       return legalValues;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
-  }
-
-  findAll() {
-    return `This action returns all legalValues`;
   }
 
   async findValues() {
@@ -38,20 +30,5 @@ export class LegalValuesService {
     if (!legalValues) throw new NotFoundException('LegalValue not found');
 
     return legalValues;
-  }
-
-  update(id: number, updateLegalValueDto: UpdateLegalValueDto) {
-    return `This action updates a #${id} legalValue`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} legalValue`;
-  }
-
-  private handleDBErrors(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error');
   }
 }
