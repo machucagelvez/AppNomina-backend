@@ -7,6 +7,7 @@ import { PaymentHistory } from './entities/payment-history.entity';
 import { EmployeesModule } from 'src/employees/employees.module';
 import { LegalValuesModule } from 'src/legal-values/legal-values.module';
 import { OvertimeModule } from 'src/overtime/overtime.module';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   controllers: [PaymentHistoryController],
@@ -17,6 +18,7 @@ import { OvertimeModule } from 'src/overtime/overtime.module';
     EmployeesModule,
     LegalValuesModule,
     OvertimeModule,
+    CommonModule,
   ],
 })
 export class PaymentHistoryModule {}

@@ -6,6 +6,7 @@ import { Overtime } from './entities/overtime.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { OvertimeType } from './entities/overtime-type.entity';
 import { LegalValuesModule } from 'src/legal-values/legal-values.module';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   controllers: [OvertimeController],
@@ -14,6 +15,7 @@ import { LegalValuesModule } from 'src/legal-values/legal-values.module';
     TypeOrmModule.forFeature([Overtime, OvertimeType]),
     AuthModule,
     LegalValuesModule,
+    CommonModule,
   ],
   exports: [OvertimeService],
 })

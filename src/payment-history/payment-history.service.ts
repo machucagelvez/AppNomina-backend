@@ -16,6 +16,7 @@ import { CreatePaymentHistoryDto } from './dto/create-payment-history.dto';
 import { UpdatePaymentHistoryDto } from './dto/update-payment-history.dto';
 import { CalculatePaymentDto } from './dto/calculate-payment.dto';
 import { OvertimeService } from 'src/overtime/overtime.service';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class PaymentHistoryService {
@@ -27,6 +28,7 @@ export class PaymentHistoryService {
     private readonly employeesService: EmployeesService,
     private readonly legalValuesService: LegalValuesService,
     private readonly overtimeService: OvertimeService,
+    private readonly commonService: CommonService,
   ) {}
   async calculatePayment(calculatePaymentDto: CalculatePaymentDto, user: User) {
     const { employeeId, paymentHistoryId } = calculatePaymentDto;
@@ -125,7 +127,7 @@ export class PaymentHistoryService {
 
       return { baseSalary: salary, ...payment, total };
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -139,7 +141,7 @@ export class PaymentHistoryService {
       await this.paymentHistoryRepository.save(payment);
       return payment;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -157,15 +159,7 @@ export class PaymentHistoryService {
       await this.paymentHistoryRepository.update(id, updatePaymentHistoryDto);
       return payment;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
-  }
-
-  private handleDBErrors(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-    if (error.status) throw error;
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error');
   }
 }

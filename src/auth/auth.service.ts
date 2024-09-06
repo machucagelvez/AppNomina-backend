@@ -15,6 +15,7 @@ import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FiltersUserDto } from './dto/filters-user.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly commonService: CommonService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -39,7 +41,7 @@ export class AuthService {
         token: this.getJwtToken({ id: user.id }),
       };
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -108,7 +110,7 @@ export class AuthService {
       delete user.password;
       return user;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -121,11 +123,5 @@ export class AuthService {
   private getJwtToken(payload: JwtPayload) {
     const token = this.jwtService.sign(payload);
     return token;
-  }
-
-  private handleDBErrors(error: any): never {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-    this.logger.error(error);
-    throw new InternalServerErrorException('Please check server logs');
   }
 }

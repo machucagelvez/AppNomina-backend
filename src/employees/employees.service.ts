@@ -17,6 +17,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { VacationService } from 'src/vacation/vacation.service';
 import { Contract } from './entities/contract.entity';
 import { PaymentFrequency } from './entities/payment-frequency.entity';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class EmployeesService {
@@ -34,6 +35,8 @@ export class EmployeesService {
 
     @Inject(forwardRef(() => VacationService))
     private readonly vacationService: VacationService,
+
+    private readonly commonService: CommonService,
   ) {}
 
   async create(createEmployeeDto: CreateEmployeeDto, user: User) {
@@ -49,7 +52,7 @@ export class EmployeesService {
       await this.employeeRepository.save(employee);
       return employee;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -86,7 +89,7 @@ export class EmployeesService {
       await this.employeeRepository.update(id, { ...updateEmployeeDto });
       return employee;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -117,7 +120,7 @@ export class EmployeesService {
       await this.contractRepository.save(contract);
       return contract;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
   }
 
@@ -129,14 +132,7 @@ export class EmployeesService {
       await this.paymentFrequency.save(paymentFrequency);
       return paymentFrequency;
     } catch (error) {
-      this.handleDBErrors(error);
+      this.commonService.errorHandler(error);
     }
-  }
-
-  private handleDBErrors(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Unexpected error');
   }
 }

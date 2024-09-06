@@ -5,6 +5,7 @@ import { VacationController } from './vacation.controller';
 import { AuthModule } from 'src/auth/auth.module';
 import { Vacation } from './entities/vacation.entity';
 import { EmployeesModule } from 'src/employees/employees.module';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   controllers: [VacationController],
@@ -13,6 +14,7 @@ import { EmployeesModule } from 'src/employees/employees.module';
     TypeOrmModule.forFeature([Vacation]),
     AuthModule,
     forwardRef(() => EmployeesModule),
+    CommonModule,
   ],
   exports: [VacationService],
 })
