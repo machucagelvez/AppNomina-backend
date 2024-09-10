@@ -59,12 +59,12 @@ export class Employee {
   salary: number;
 
   @ApiProperty()
-  @Column('timestamptz')
-  start_date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  start_date: string;
 
   @ApiProperty()
-  @Column({ type: 'timestamptz', nullable: true })
-  end_date: Date;
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  end_date: string;
 
   @ApiProperty()
   @Column({ type: 'bool', default: true })
@@ -110,9 +110,4 @@ export class Employee {
 
   @OneToMany(() => PaymentHistory, (paymentHistory) => paymentHistory.employee)
   paymentHistory: PaymentHistory;
-
-  @BeforeInsert()
-  parseDate() {
-    this.start_date = new Date(this.start_date);
-  }
 }

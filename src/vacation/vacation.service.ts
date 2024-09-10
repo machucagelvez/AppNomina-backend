@@ -4,7 +4,6 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +12,8 @@ import {
   addYears,
   differenceInDays,
   differenceInYears,
+  format,
+  parseISO,
 } from 'date-fns';
 const Holidays = require('date-holidays');
 import { CreateVacationDto } from './dto/create-vacation.dto';
@@ -23,7 +24,6 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { EmployeesService } from 'src/employees/employees.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
 import { CommonService } from 'src/common/common.service';
 
 @Injectable()
@@ -143,8 +143,8 @@ export class VacationService {
 
   async remove(id: number) {
     const vacation = await this.findOne(id);
-    const startDate = eliminateTimeZone(vacation.start_date);
-    const endDate = eliminateTimeZone(vacation.end_date);
+    const startDate = new Date(vacation.start_date);
+    const endDate = new Date(vacation.end_date);
     const today = new Date();
     if (endDate < today)
       throw new ForbiddenException('Cannot delete a past period');
@@ -166,14 +166,15 @@ export class VacationService {
     if (vacations.length === 0 && updating)
       throw new NotFoundException('Vacation not found');
 
-    let returnDay: Date = null;
-    const today = new Date();
+    let returnDay: string = null;
+    const today = format(new Date(), 'yyyy-MM-dd');
     if (vacations.length > 0) {
       const lastVacation = vacations[vacations.length - 1];
-      const endDate = eliminateTimeZone(new Date(lastVacation.end_date));
+      const endDate = lastVacation.end_date;
 
       if (updating) vacations.pop();
-      if (endDate >= today) returnDay = addDays(endDate, 1);
+      if (endDate >= today)
+        returnDay = format(addDays(parseISO(endDate), 1), 'yyyy-MM-dd');
     }
 
     const employeeStartDate =
@@ -187,14 +188,8 @@ export class VacationService {
       return sum + workingDays;
     }, 0);
 
-    const workedYears = differenceInYears(
-      today,
-      eliminateTimeZone(employeeStartDate),
-    );
-    const nextDate = addYears(
-      eliminateTimeZone(employeeStartDate),
-      workedYears,
-    );
+    const workedYears = differenceInYears(today, employeeStartDate);
+    const nextDate = addYears(employeeStartDate, workedYears);
     const workedDays = differenceInDays(today, nextDate);
     const totalVacationDays = Math.floor(
       workedYears * 15 + (workedDays * 15) / 360,
@@ -210,7 +205,7 @@ export class VacationService {
     };
   }
 
-  private getWorkingDays(startDate: Date, endDate: Date) {
+  private getWorkingDays(startDate: string, endDate: string) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const hd = new Holidays('CO');
@@ -221,7 +216,7 @@ export class VacationService {
       const workingDay =
         currentDay.getUTCDay() === 0 ||
         currentDay.getUTCDay() === 6 ||
-        hd.isHoliday(eliminateTimeZone(currentDay))
+        hd.isHoliday(currentDay)
           ? false
           : true;
       if (workingDay) workingDays++;
@@ -233,8 +228,8 @@ export class VacationService {
 
   private validations(
     lastVacation: Vacation | undefined,
-    newStartDate: Date,
-    newEndDate: Date,
+    newStartDate: string,
+    newEndDate: string,
     pendingVacationDays: number,
   ) {
     const requestedDays = this.getWorkingDays(newStartDate, newEndDate);
@@ -255,7 +250,7 @@ export class VacationService {
       if (newStartDate <= lastEndDate)
         throw new BadRequestException('Overlapping periods');
 
-      const nextDay = addDays(eliminateTimeZone(new Date(lastEndDate)), 1);
+      const nextDay = addDays(new Date(lastEndDate), 1);
       if (nextDay >= new Date(today))
         throw new ForbiddenException('The current period has not ended');
 
