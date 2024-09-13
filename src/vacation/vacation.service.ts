@@ -177,8 +177,11 @@ export class VacationService {
         returnDay = format(addDays(parseISO(endDate), 1), 'yyyy-MM-dd');
     }
 
-    const employeeStartDate =
-      await this.employeesService.getStartDate(employeeId);
+    const {
+      start_date: employeeStartDate,
+      end_date: employeeEndDate,
+      contractId,
+    } = await this.employeesService.getContractDate(employeeId);
 
     const takenVacationDays = vacations.reduce((sum, vacation) => {
       const workingDays = this.getWorkingDays(
@@ -188,13 +191,15 @@ export class VacationService {
       return sum + workingDays;
     }, 0);
 
-    const workedYears = differenceInYears(today, employeeStartDate);
+    let referenceDate = today;
+    if (contractId === 2) referenceDate = employeeEndDate;
+
+    const workedYears = differenceInYears(referenceDate, employeeStartDate);
     const nextDate = addYears(employeeStartDate, workedYears);
-    const workedDays = differenceInDays(today, nextDate);
+    const workedDays = differenceInDays(referenceDate, nextDate);
     const totalVacationDays = Math.floor(
       workedYears * 15 + (workedDays * 15) / 360,
     );
-
     const pendingVacationDays = totalVacationDays - takenVacationDays;
 
     return {
