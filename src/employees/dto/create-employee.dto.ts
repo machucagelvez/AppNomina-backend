@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsDate,
+  IsDateString,
   IsEmail,
   IsIn,
   IsNumber,
@@ -55,13 +54,11 @@ export class CreateEmployeeDto {
   salary: number;
 
   @ApiProperty()
-  @IsDate()
-  @Type(() => Date)
+  @IsDateString()
   start_date: string;
 
   @ApiProperty()
-  @IsDate()
-  @Type(() => Date)
+  @IsDateString()
   @IsOptional()
   end_date?: string;
 

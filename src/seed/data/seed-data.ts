@@ -1,5 +1,4 @@
 import { addMonths, format, subMonths, subYears } from 'date-fns';
-import { eliminateTimeZone } from 'src/common/helpers/eliminate-time-zone';
 
 type ValidRoles = 'admin' | 'user';
 type ValidDocumentTypes = 'cc' | 'ce' | 'nit';
@@ -120,10 +119,7 @@ export const seedData: SeedData = {
       afp: 'Porvenir',
       ccf: 'Comfama',
       salary: 1300000,
-      start_date: format(
-        subYears(eliminateTimeZone(new Date()), 1),
-        'yyyy-MM-dd',
-      ),
+      start_date: format(subYears(new Date(), 1), 'yyyy-MM-dd'),
       discount_date: null,
       contractId: 1,
       paymentFrequencyId: 1,
@@ -138,10 +134,7 @@ export const seedData: SeedData = {
       afp: 'Colpensiones',
       ccf: 'Comfenalco',
       salary: 2300000,
-      start_date: format(
-        subMonths(eliminateTimeZone(new Date()), 8),
-        'yyyy-MM-dd',
-      ),
+      start_date: format(subMonths(new Date(), 8), 'yyyy-MM-dd'),
       discount_date: 'both',
       contractId: 1,
       paymentFrequencyId: 2,
@@ -156,14 +149,8 @@ export const seedData: SeedData = {
       afp: 'Protección',
       ccf: 'Comfaoriente',
       salary: 3300000,
-      start_date: format(
-        subMonths(eliminateTimeZone(new Date()), 5),
-        'yyyy-MM-dd',
-      ),
-      end_date: format(
-        addMonths(eliminateTimeZone(new Date()), 7),
-        'yyyy-MM-dd',
-      ),
+      start_date: format(subMonths(new Date(), 5), 'yyyy-MM-dd'),
+      end_date: format(addMonths(new Date(), 7), 'yyyy-MM-dd'),
       discount_date: 'first',
       contractId: 2,
       paymentFrequencyId: 2,

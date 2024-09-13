@@ -16,12 +16,12 @@ export class Vacation {
   id: number;
 
   @ApiProperty()
-  @Column({ type: 'timestamptz' })
-  start_date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  start_date: string;
 
   @ApiProperty()
-  @Column({ type: 'timestamptz' })
-  end_date: Date;
+  @Column({ type: 'varchar', length: 10 })
+  end_date: string;
 
   @ApiProperty()
   @Column({ type: 'bool', default: true })
