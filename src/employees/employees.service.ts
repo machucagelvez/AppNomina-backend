@@ -99,17 +99,18 @@ export class EmployeesService {
     return 'Employee deleted';
   }
 
-  async getStartDate(id: string) {
+  async getContractDate(id: string) {
     const employeeStartDate = await this.employeeRepository
       .createQueryBuilder('employee')
-      .select('employee.start_date')
+      .innerJoinAndSelect('employee.contract', 'contract')
+      .select(['employee.start_date', 'employee.end_date', 'contract.id'])
       .where({ id })
       .getOne();
 
     if (!employeeStartDate) throw new NotFoundException('Employee not found');
-    const { start_date } = employeeStartDate;
+    const { start_date, end_date, contract } = employeeStartDate;
 
-    return start_date;
+    return { start_date, end_date, contractId: contract.id };
   }
 
   async createContractType(name: string) {
